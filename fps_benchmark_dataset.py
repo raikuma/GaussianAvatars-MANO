@@ -8,7 +8,7 @@ from gaussian_renderer import render
 from utils.general_utils import safe_state
 from argparse import ArgumentParser
 from arguments import ModelParams, PipelineParams, get_combined_args
-from gaussian_renderer import GaussianModel, FlameGaussianModel
+from gaussian_renderer import GaussianModel, FlameGaussianModel, ManoGaussianModel
 
 
 def render_set(dataset : ModelParams, name, iteration, views, gaussians, pipeline, background, n_iter, vis=False):
@@ -38,8 +38,10 @@ def render_set(dataset : ModelParams, name, iteration, views, gaussians, pipelin
         
 def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_val : bool, skip_test : bool, n_iter : int, vis=False):
     with torch.no_grad():
-        if dataset.bind_to_mesh:
+        if dataset.bind_to_mesh == 'Flame':
             gaussians = FlameGaussianModel(dataset.sh_degree)
+        elif dataset.bind_to_mesh == 'MANO':
+            gaussians = ManoGaussianModel(dataset.sh_degree)
         else:
             gaussians = GaussianModel(dataset.sh_degree)
         scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False)

@@ -225,7 +225,8 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
                 im_data = np.array(image.convert("RGBA"))
                 norm_data = im_data / 255.0
                 arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
-                image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
+                im_uint8 = np.array(np.clip(arr * 255.0, 0, 255), dtype=np.uint8)
+                image = Image.fromarray(im_uint8, "RGB")
                 width, height = image.size
 
             if 'camera_angle_x' in frame:
@@ -290,8 +291,14 @@ def readMeshesFromTransforms(path, transformsfile):
             if not 'timestep_index' in frame or frame["timestep_index"] in mesh_infos:
                 continue
 
-            flame_param = dict(np.load(os.path.join(path, frame['flame_param_path']), allow_pickle=True))
-            mesh_infos[frame["timestep_index"]] = flame_param
+            if 'flame_param_path' in frame:
+                flame_param = dict(np.load(os.path.join(path, frame['flame_param_path']), allow_pickle=True))
+                mesh_infos[frame["timestep_index"]] = flame_param
+            elif 'mano_param_path' in frame:
+                mano_param_path = os.path.join(path, frame['mano_param_path'])
+                with open(mano_param_path, 'r') as f:
+                    mano_param = json.load(f)
+                mesh_infos[frame["timestep_index"]] = mano_param
     return mesh_infos
 
 def readDynamicNerfInfo(path, white_background, eval, extension=".png", target_path=""):

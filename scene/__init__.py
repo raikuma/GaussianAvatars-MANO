@@ -21,6 +21,7 @@ from scene.dataset_readers import sceneLoadTypeCallbacks
 from scene.cameras import Camera
 from scene.gaussian_model import GaussianModel
 from scene.flame_gaussian_model import FlameGaussianModel
+from scene.mano_gaussian_model import ManoGaussianModel
 from arguments import ModelParams
 from utils.camera_utils import cameraList_from_camInfos, camera_to_JSON
 from utils.general_utils import PILtoTorch
@@ -48,7 +49,8 @@ class CameraDataset(torch.utils.data.Dataset):
             im_data = np.array(image.convert("RGBA"))
             norm_data = im_data / 255.0
             arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + camera.bg * (1 - norm_data[:, :, 3:4])
-            image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
+            im_uint8 = np.array(np.clip(arr * 255.0, 0, 255), dtype=np.uint8)
+            image = Image.fromarray(im_uint8, "RGB")
 
             # ---- from loadCam() and Camera.__init__() ----
             resized_image_rgb = PILtoTorch(image, (camera.image_width, camera.image_height))
@@ -70,7 +72,7 @@ class Scene:
 
     gaussians : GaussianModel
 
-    def __init__(self, args : ModelParams, gaussians : Union[GaussianModel, FlameGaussianModel], load_iteration=None, shuffle=True, resolution_scales=[1.0]):
+    def __init__(self, args : ModelParams, gaussians : Union[GaussianModel, FlameGaussianModel, ManoGaussianModel], load_iteration=None, shuffle=True, resolution_scales=[1.0]):
         """b
         :param path: Path to colmap scene main folder.
         """
@@ -91,6 +93,9 @@ class Scene:
             scene_info = sceneLoadTypeCallbacks["Colmap"](args.source_path, args.images, args.eval)
         elif os.path.exists(os.path.join(args.source_path, "canonical_flame_param.npz")):
             print("Found FLAME parameter, assuming dynamic NeRF data set!")
+            scene_info = sceneLoadTypeCallbacks["DynamicNerf"](args.source_path, args.white_background, args.eval, target_path=args.target_path)
+        elif os.path.exists(os.path.join(args.source_path, "MANO_RIGHT.pkl")):
+            print("Found MANO parameter, assuming dynamic NeRF data set!")
             scene_info = sceneLoadTypeCallbacks["DynamicNerf"](args.source_path, args.white_background, args.eval, target_path=args.target_path)
         elif os.path.exists(os.path.join(args.source_path, "transforms_train.json")):
             print("Found transforms_train.json file, assuming Blender data set!")
@@ -125,7 +130,7 @@ class Scene:
             random.shuffle(scene_info.val_cameras)  # Multi-res consistent random shuffling
             random.shuffle(scene_info.test_cameras)  # Multi-res consistent random shuffling
 
-        self.cameras_extent = scene_info.nerf_normalization["radius"]
+        self.cameras_extent = max(scene_info.nerf_normalization["radius"], 1.0)
 
         for resolution_scale in resolution_scales:
             print("Loading Training Cameras")

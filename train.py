@@ -14,6 +14,9 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from random import randint
+
+import torchvision
+from scene.mano_gaussian_model import ManoGaussianModel
 from utils.loss_utils import l1_loss, ssim
 from gaussian_renderer import render, network_gui
 from mesh_renderer import NVDiffRenderer
@@ -35,8 +38,11 @@ except ImportError:
 def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoint_iterations, checkpoint, debug_from):
     first_iter = 0
     tb_writer = prepare_output_and_logger(dataset)
-    if dataset.bind_to_mesh:
+    if dataset.bind_to_mesh == 'Flame':
         gaussians = FlameGaussianModel(dataset.sh_degree, dataset.disable_flame_static_offset, dataset.not_finetune_flame_params)
+        mesh_renderer = NVDiffRenderer()
+    elif dataset.bind_to_mesh == 'MANO':
+        gaussians = ManoGaussianModel(dataset.sh_degree)
         mesh_renderer = NVDiffRenderer()
     else:
         gaussians = GaussianModel(dataset.sh_degree)
@@ -155,7 +161,8 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
                     t_indices.append(ti-1)
                 if ti < gaussians.num_timesteps - 1:
                     t_indices.append(ti+1)
-                losses['dynamic_offset_std'] = gaussians.flame_param['dynamic_offset'].std(dim=0).mean() * opt.lambda_dynamic_offset_std
+                if dataset.bind_to_mesh == 'Flame':
+                    losses['dynamic_offset_std'] = gaussians.flame_param['dynamic_offset'].std(dim=0).mean() * opt.lambda_dynamic_offset_std
         
             if opt.lambda_laplacian != 0:
                 losses['lap'] = gaussians.compute_laplacian_loss() * opt.lambda_laplacian
@@ -190,6 +197,15 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             if (iteration in saving_iterations):
                 print("[ITER {}] Saving Gaussians".format(iteration))
                 scene.save(iteration)
+
+            # Visualization
+            if iteration % 100 == 0:
+                if gaussians.binding != None:
+                    gaussians.select_mesh_by_timestep(viewpoint_cam.timestep)
+                out_dict = mesh_renderer.render_from_camera(gaussians.verts, gaussians.faces, viewpoint_cam)
+                rgb_mesh = out_dict['rgba'].squeeze(0).permute(2, 0, 1)[:3, :, :]  # (C, W, H)
+                grid = torchvision.utils.make_grid([image, rgb_mesh, gt_image], nrow=2)
+                torchvision.utils.save_image(grid, os.path.join(scene.model_path, "vis.png"))
 
             # Densification
             if iteration < opt.densify_until_iter:
