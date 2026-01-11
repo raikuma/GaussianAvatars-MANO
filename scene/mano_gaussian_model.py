@@ -102,7 +102,7 @@ class ManoGaussianModel(GaussianModel):
                 # # self.flame_param['dynamic_offset'][i] = torch.from_numpy(mesh['dynamic_offset'])
 
                 self.mano_param['root_pose'][i] = torch.from_numpy(np.array(mesh['root_pose']))
-                self.mano_param['root_trans'][i] = torch.from_numpy(np.array(mesh['root_trans'])) / 7
+                self.mano_param['root_trans'][i] = torch.from_numpy(np.array(mesh['root_trans']))
                 self.mano_param['hand_pose'][i] = torch.from_numpy(np.array(mesh['hand_pose']))
                 # self.mano_param['dynamic_offset'][i] = torch.from_numpy(np.array(mesh['dynamic_offset']))
             
