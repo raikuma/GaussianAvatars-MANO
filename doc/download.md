@@ -23,3 +23,14 @@ In our paper, we use 9 subjects from the NeRSemble dataset. You can download the
 #### 2. Custom data
 
 You can use our latest head-tracking pipeline, [VHAP](https://github.com/ShenhanQian/VHAP), to preprocess your custom data.
+
+### MANO Model
+
+Download MANO_LEFT.pkl and MANO_RIGHT.pkl from the [MANO website](https://mano.is.tue.mpg.de/) and edit the `MANO_MODEL_PATH` in `scene/mano_gaussian_model.py` accordingly.
+
+Data reader assumes that the scene is generated from [InterWild](https://github.com/facebookresearch/InterWild).
+Run the `utils/generate_transform_json.py` to generate the `transforms.json` for your data.
+
+```shell
+python utils/generate_transform_json.py <scene_root>
+```
