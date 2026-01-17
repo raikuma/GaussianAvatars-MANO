@@ -30,6 +30,8 @@ class CameraInfo(NamedTuple):
     T: np.array
     FovY: np.array
     FovX: np.array
+    cx: float
+    cy: float
     image: Optional[np.array]
     image_path: str
     image_name: str
@@ -233,13 +235,25 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
                 fovx = frame["camera_angle_x"]
             else:
                 fovx = fovx_shared
-            fovy = focal2fov(fov2focal(fovx, width), height)
+            if 'camera_angle_y' in frame:
+                fovy = frame["camera_angle_y"]
+            else:
+                fovy = focal2fov(fov2focal(fovx, width), height)
+
+            if 'cx' in frame:
+                cx = frame['cx']
+            else:
+                cx = 0
+            if 'cy' in frame:
+                cy = frame['cy']
+            else:
+                cy = 0
 
             timestep = frame["timestep_index"] if 'timestep_index' in frame else None
             camera_id = frame["camera_index"] if 'camera_id' in frame else None
             
             cam_infos.append(CameraInfo(
-                uid=idx, R=R, T=T, FovY=fovy, FovX=fovx, bg=bg, image=image, 
+                uid=idx, R=R, T=T, FovY=fovy, FovX=fovx, cx=cx, cy=cy, bg=bg, image=image, 
                 image_path=image_path, image_name=image_name, 
                 width=width, height=height, 
                 timestep=timestep, camera_id=camera_id))

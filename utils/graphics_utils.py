@@ -57,6 +57,16 @@ def getProjectionMatrix(znear, zfar, fovX, fovY):
     right = tanHalfFovX * znear
     left = -right
 
+def getProjectionMatrixCenterShift(znear, zfar, cx, cy, fovX, fovY, w, h):
+    fl_x = fov2focal(fovX, w)
+    fl_y = fov2focal(fovY, h)
+
+    top = cy / fl_y * znear
+    bottom = -(h-cy) / fl_y * znear
+    
+    left = -(w-cx) / fl_x * znear
+    right = cx / fl_x * znear
+
     P = torch.zeros(4, 4)
 
     z_sign = 1.0
