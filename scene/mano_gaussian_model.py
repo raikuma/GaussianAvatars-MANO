@@ -18,7 +18,7 @@ from utils.graphics_utils import compute_face_orientation
 # from pytorch3d.transforms import matrix_to_quaternion
 from roma import rotmat_to_unitquat, quat_xyzw_to_wxyz
 
-MANO_MODEL_PATH = 'data/1/MANO_RIGHT.pkl'
+MANO_MODEL_PATH = 'mano_model/MANO_RIGHT.pkl'
 
 class ManoGaussianModel(GaussianModel):
     def __init__(self, sh_degree : int, disable_flame_static_offset=False, not_finetune_flame_params=False, n_shape=300, n_expr=100):

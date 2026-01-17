@@ -26,11 +26,9 @@ You can use our latest head-tracking pipeline, [VHAP](https://github.com/Shenhan
 
 ### MANO Model
 
-Download MANO_LEFT.pkl and MANO_RIGHT.pkl from the [MANO website](https://mano.is.tue.mpg.de/) and edit the `MANO_MODEL_PATH` in `scene/mano_gaussian_model.py` accordingly.
-
 Data reader assumes that the scene is generated from [InterWild](https://github.com/facebookresearch/InterWild).
-Run the `utils/generate_transform_json.py` to generate the `transforms.json` for your data.
+Run the `preprocess/generate_transform_json.py` to generate the `transforms.json` for your data.
 
 ```shell
-python utils/generate_transform_json.py <scene_root>
+python preprocess/generate_transform_json.py <scene_root>
 ```
