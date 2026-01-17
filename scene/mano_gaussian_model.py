@@ -12,6 +12,7 @@ import torch
 # from vht.model.flame import FlameHead
 from flame_model.flame import FlameHead
 import mano
+import smplx
 
 from .gaussian_model import GaussianModel
 from utils.graphics_utils import compute_face_orientation
@@ -36,11 +37,14 @@ class ManoGaussianModel(GaussianModel):
         # ).cuda()
         # self.flame_param = None
         # self.flame_param_orig = None
+        layer_arg = {'create_global_orient': False, 'create_hand_pose': False, 'create_betas': False, 'create_transl': False}
+        self.mano_model = smplx.create(MANO_MODEL_PATH, 'mano', is_rhand=True, use_pca=False, flat_hand_mean=False, **layer_arg).cuda()
+        
 
-        self.mano_model = mano.load(model_path=MANO_MODEL_PATH,
-                            is_rhand=True,
-                            num_pca_comps=45,  # full pose
-                            ).cuda()
+        # self.mano_model = mano.load(model_path=MANO_MODEL_PATH,
+        #                     is_rhand=True,
+        #                     num_pca_comps=45,  # full pose
+        #                     ).cuda()
         self.mano_param = None
         self.mano_param_orig = None
 
@@ -172,7 +176,15 @@ class ManoGaussianModel(GaussianModel):
             hand_pose=mano_param['hand_pose'][[timestep]],
         )
         verts = output.vertices
-        verts_cano = output.vertices[0] # TODO
+        # verts_cano = output.vertices[0] # TODO
+
+        output_cano = self.mano_model(
+            betas=mano_param['shape'][None, ...],
+            global_orient=torch.zeros([1, 3]).cuda(),
+            transl=torch.zeros([1, 3]).cuda(),
+            hand_pose=torch.zeros([1, len(mano_param['hand_pose'][0])]).cuda(),
+        )
+        verts_cano = output_cano.vertices
         self.update_mesh_properties(verts, verts_cano)
     
     def update_mesh_properties(self, verts, verts_cano):
