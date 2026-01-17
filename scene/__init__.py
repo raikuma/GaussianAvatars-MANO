@@ -94,7 +94,7 @@ class Scene:
         elif os.path.exists(os.path.join(args.source_path, "canonical_flame_param.npz")):
             print("Found FLAME parameter, assuming dynamic NeRF data set!")
             scene_info = sceneLoadTypeCallbacks["DynamicNerf"](args.source_path, args.white_background, args.eval, target_path=args.target_path)
-        elif os.path.exists(os.path.join(args.source_path, "MANO_RIGHT.pkl")):
+        elif os.path.exists(os.path.join(args.source_path, "mano_params")):
             print("Found MANO parameter, assuming dynamic NeRF data set!")
             scene_info = sceneLoadTypeCallbacks["DynamicNerf"](args.source_path, args.white_background, args.eval, target_path=args.target_path)
         elif os.path.exists(os.path.join(args.source_path, "transforms_train.json")):
