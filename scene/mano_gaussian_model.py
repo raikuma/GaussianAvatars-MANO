@@ -99,22 +99,34 @@ class ManoGaussianModel(GaussianModel):
         ).vertices
         self.update_mesh_properties(verts, verts_cano)
 
-    def select_mesh_by_timestep(self, timestep, original=False):
+    def select_mesh_by_timestep(self, timestep, original=False, zero_origin=False):
         self.timestep = timestep
         mano_param = self.mano_param_orig if original and self.mano_param_orig is not None else self.mano_param
 
-        verts = self.mano_model(
-            betas=mano_param['shape'][None, ...],
-            global_orient=mano_param['root_pose'][[timestep]],
-            transl=mano_param['root_trans'][[timestep]],
-            hand_pose=mano_param['hand_pose'][[timestep]],
-        ).vertices
-        verts_cano = self.mano_model(
-            betas=mano_param['shape'][None, ...],
-            global_orient=torch.zeros([1, 3]).cuda(),
-            transl=torch.zeros([1, 3]).cuda(),
-            hand_pose=torch.zeros([1, len(mano_param['hand_pose'][0])]).cuda(),
-        ).vertices
+        if zero_origin:
+            verts = self.mano_model(
+                betas=mano_param['shape'][None, ...],
+                global_orient=mano_param['root_pose'][[timestep]],
+                hand_pose=mano_param['hand_pose'][[timestep]],
+            ).vertices
+            verts_cano = self.mano_model(
+                betas=mano_param['shape'][None, ...],
+                global_orient=torch.zeros([1, 3]).cuda(),
+                hand_pose=torch.zeros([1, len(mano_param['hand_pose'][0])]).cuda(),
+            ).vertices
+        else:
+            verts = self.mano_model(
+                betas=mano_param['shape'][None, ...],
+                global_orient=mano_param['root_pose'][[timestep]],
+                transl=mano_param['root_trans'][[timestep]],
+                hand_pose=mano_param['hand_pose'][[timestep]],
+            ).vertices
+            verts_cano = self.mano_model(
+                betas=mano_param['shape'][None, ...],
+                global_orient=torch.zeros([1, 3]).cuda(),
+                transl=torch.zeros([1, 3]).cuda(),
+                hand_pose=torch.zeros([1, len(mano_param['hand_pose'][0])]).cuda(),
+            ).vertices
         self.update_mesh_properties(verts, verts_cano)
     
     def update_mesh_properties(self, verts, verts_cano):

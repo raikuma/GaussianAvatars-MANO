@@ -114,7 +114,7 @@ class FlameGaussianModel(GaussianModel):
         )
         self.update_mesh_properties(verts, verts_cano)
 
-    def select_mesh_by_timestep(self, timestep, original=False):
+    def select_mesh_by_timestep(self, timestep, original=False, zero_origin=False):
         self.timestep = timestep
         flame_param = self.flame_param_orig if original and self.flame_param_orig != None else self.flame_param
 

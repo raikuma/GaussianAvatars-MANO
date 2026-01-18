@@ -78,7 +78,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
                 if custom_cam != None:
                     # mesh selection by timestep
                     if gaussians.binding != None:
-                        gaussians.select_mesh_by_timestep(custom_cam.timestep, msg['use_original_mesh'])
+                        gaussians.select_mesh_by_timestep(custom_cam.timestep, msg['use_original_mesh'], zero_origin=True)
                     
                     # gaussian splatting rendering
                     if msg['show_splatting']:
