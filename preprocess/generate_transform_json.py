@@ -7,10 +7,7 @@ def focal2fov(focal, pixels):
 root_path = sys.argv[1]
 param_path = f"{root_path}/mano_params/debug_persp_frames"
 
-json_data = {
-    "frames": []
-}
-
+frames = []
 for idx in os.listdir(param_path):
     json_path = os.path.join(param_path, idx, 'stats.json')
     if os.path.exists(json_path):
@@ -19,6 +16,10 @@ for idx in os.listdir(param_path):
         
         frame = stats.get("frame")
         i = int(frame)
+
+        if i < 0:
+            continue
+
         h, w = stats.get("image_hw")
         cx, cy = stats.get("ortho_princpt")
         fl_x, fl_y = stats.get("persp_fx_fy")
@@ -49,7 +50,13 @@ for idx in os.listdir(param_path):
             "mano_param_path": f"mano_params/params/{frame}.json",
         }
 
-        json_data["frames"].append(frame_data)
+        frames.append(frame_data)
+
+frames.sort(key=lambda x:x['timestep_index'])
+
+json_data = {
+    "frames": frames
+}
 
 for split in ["train", "val", "test"]:
     with open(f"{root_path}/transforms_{split}.json", "w") as f:

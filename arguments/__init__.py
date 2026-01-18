@@ -57,7 +57,7 @@ class ModelParams(ParamGroup):
         self.eval = False
         self.bind_to_mesh = '' # 'Flame', 'MANO'
         self.disable_flame_static_offset = False
-        self.not_finetune_flame_params = False
+        self.not_finetune_model_params = False
         self.select_camera_id = -1
         super().__init__(parser, "Loading Parameters", sentinel)
 
@@ -95,6 +95,8 @@ class OptimizationParams(ParamGroup):
         self.flame_expr_lr = 1e-3
         self.flame_trans_lr = 1e-6
         self.flame_pose_lr = 1e-5
+        self.mano_trans_lr = 1e-6
+        self.mano_pose_lr = 1e-5
         self.percent_dense = 0.01
         self.lambda_dssim = 0.2
         self.lambda_xyz = 1e-2

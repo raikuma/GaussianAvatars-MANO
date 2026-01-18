@@ -19,11 +19,11 @@ from roma import rotmat_to_unitquat, quat_xyzw_to_wxyz
 
 
 class FlameGaussianModel(GaussianModel):
-    def __init__(self, sh_degree : int, disable_flame_static_offset=False, not_finetune_flame_params=False, n_shape=300, n_expr=100):
+    def __init__(self, sh_degree : int, disable_flame_static_offset=False, not_finetune_model_params=False, n_shape=300, n_expr=100):
         super().__init__(sh_degree)
 
         self.disable_flame_static_offset = disable_flame_static_offset
-        self.not_finetune_flame_params = not_finetune_flame_params
+        self.not_finetune_model_params = not_finetune_model_params
         self.n_shape = n_shape
         self.n_expr = n_expr
 
@@ -174,7 +174,7 @@ class FlameGaussianModel(GaussianModel):
     def training_setup(self, training_args):
         super().training_setup(training_args)
 
-        if self.not_finetune_flame_params:
+        if self.not_finetune_model_params:
             return
 
         # # shape
