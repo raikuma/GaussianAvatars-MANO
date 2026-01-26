@@ -201,7 +201,7 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             file_path = frame["file_path"]
             if extension not in frame["file_path"]:
                 file_path += extension
-            cam_name = os.path.join(path, file_path)
+            # cam_name = os.path.join(path, file_path)  # Original code - removed to fix path duplication
 
             # NeRF 'transform_matrix' is a camera-to-world transform
             c2w = np.array(frame["transform_matrix"])
@@ -215,8 +215,14 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
 
             bg = np.array([1,1,1]) if white_background else np.array([0, 0, 0])
 
-            image_path = os.path.join(path, cam_name)
-            image_name = Path(cam_name).stem
+            # Handle both absolute and relative paths to fix path duplication issue
+            if os.path.isabs(file_path):
+                image_path = file_path
+            else:
+                image_path = os.path.join(path, file_path)
+            # image_path = os.path.join(path, cam_name)  # Original code - caused path duplication
+            cam_name = image_path
+            image_name = Path(file_path).stem
             
             if 'w' in frame and 'h' in frame:
                 image = None

@@ -40,7 +40,8 @@ class FlameGaussianModel(GaussianModel):
             self.binding = torch.arange(len(self.flame_model.faces)).cuda()
             self.binding_counter = torch.ones(len(self.flame_model.faces), dtype=torch.int32).cuda()
 
-    def load_meshes(self, train_meshes, test_meshes, tgt_train_meshes, tgt_test_meshes):
+    def load_meshes(self, train_meshes, test_meshes, tgt_train_meshes, tgt_test_meshes, 
+                    fix_root_rotation=False, fix_root_translation=False, fix_hand_pose=False):
         if self.flame_param is None:
             meshes = {**train_meshes, **test_meshes}
             tgt_meshes = {**tgt_train_meshes, **tgt_test_meshes}

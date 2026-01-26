@@ -13,8 +13,8 @@ for idx in os.listdir(param_path):
     if os.path.exists(json_path):
         with open(json_path) as json_file:
             stats = json.load(json_file)
-        
-        frame = stats.get("frame")
+
+        frame = idx #stats.get("frame")
         i = int(frame)
 
         if i < 0:

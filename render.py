@@ -116,9 +116,11 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
         background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
         if dataset.target_path != "":
-             name = os.path.basename(os.path.normpath(dataset.target_path))
-             # when loading from a target path, test cameras are merged into the train cameras
-             render_set(dataset, f'{name}', scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background, render_mesh)
+            name = os.path.basename(os.path.normpath(dataset.target_path))
+            print('target path: ', dataset.target_path)
+            print('name: ', name)
+            # when loading from a target path, test cameras are merged into the train cameras
+            render_set(dataset, f'{name}', scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background, render_mesh)
         else:
             if not skip_train:
                 render_set(dataset, "train", scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background, render_mesh)

@@ -36,7 +36,8 @@ class ManoGaussianModel(GaussianModel):
             self.binding = torch.arange(len(self.mano_model.faces)).cuda()
             self.binding_counter = torch.ones(len(self.mano_model.faces), dtype=torch.int32).cuda()
 
-    def load_meshes(self, train_meshes, test_meshes, tgt_train_meshes, tgt_test_meshes):
+    def load_meshes(self, train_meshes, test_meshes, tgt_train_meshes, tgt_test_meshes, 
+                    fix_root_rotation=False, fix_root_translation=False, fix_hand_pose=False):
         # if self.flame_param is None:
         if self.mano_param is None:
             meshes = {**train_meshes, **test_meshes}
@@ -57,10 +58,34 @@ class ManoGaussianModel(GaussianModel):
                 'dynamic_offset': torch.zeros([T, num_verts, 3]),
             }
 
+            # Get source's first timestep values for root_pose, root_trans, and hand_pose (if fix options are enabled)
+            source_first_timestep = min(meshes.keys()) if len(meshes) > 0 else 0
+            source_root_pose = None
+            source_root_trans = None
+            source_hand_pose = None
+            if fix_root_rotation or fix_root_translation:
+                source_root_pose = torch.from_numpy(np.array(meshes[source_first_timestep]['root_pose']))
+                source_root_trans = torch.from_numpy(np.array(meshes[source_first_timestep]['root_trans']))
+            if fix_hand_pose:
+                source_hand_pose = torch.from_numpy(np.array(meshes[source_first_timestep]['hand_pose']))
+            
+            # Load parameters from pose_meshes (target if available, otherwise source)
             for i, mesh in pose_meshes.items():
-                self.mano_param['root_pose'][i] = torch.from_numpy(np.array(mesh['root_pose']))
-                self.mano_param['root_trans'][i] = torch.from_numpy(np.array(mesh['root_trans']))
-                self.mano_param['hand_pose'][i] = torch.from_numpy(np.array(mesh['hand_pose']))
+                # Use fixed source values if options are enabled, otherwise use from pose_meshes
+                if fix_root_rotation:
+                    self.mano_param['root_pose'][i] = source_root_pose.clone()
+                else:
+                    self.mano_param['root_pose'][i] = torch.from_numpy(np.array(mesh['root_pose']))
+                
+                if fix_root_translation:
+                    self.mano_param['root_trans'][i] = source_root_trans.clone()
+                else:
+                    self.mano_param['root_trans'][i] = torch.from_numpy(np.array(mesh['root_trans']))
+                
+                if fix_hand_pose:
+                    self.mano_param['hand_pose'][i] = source_hand_pose.clone()
+                else:
+                    self.mano_param['hand_pose'][i] = torch.from_numpy(np.array(mesh['hand_pose']))
                 # self.mano_param['dynamic_offset'][i] = torch.from_numpy(np.array(mesh['dynamic_offset']))
 
             for k, v in self.mano_param.items():

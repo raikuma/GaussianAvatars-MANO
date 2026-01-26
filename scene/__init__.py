@@ -57,6 +57,18 @@ class CameraDataset(torch.utils.data.Dataset):
 
             image = resized_image_rgb[:3, ...]
 
+            mask_path = camera.image_path.replace('frames', 'sam3_masks_hand')
+            if os.path.exists(mask_path):
+                mask = Image.open(mask_path)
+                mask = np.array(mask.convert("L"))
+                mask = mask / 255.0
+                mask = mask[None, ...]
+                mask = torch.from_numpy(mask).to(image.device)
+                mask = mask.to(image.dtype)
+                # camera.alpha_mask = mask
+                image = image*mask + (1-mask)*torch.ones_like(image)
+            # image *= mask
+
             if resized_image_rgb.shape[1] == 4:
                 gt_alpha_mask = resized_image_rgb[3:4, ...]
                 image *= gt_alpha_mask
@@ -143,7 +155,10 @@ class Scene:
         # process meshes
         if gaussians.binding != None:
             self.gaussians.load_meshes(scene_info.train_meshes, scene_info.test_meshes, 
-                                       scene_info.tgt_train_meshes, scene_info.tgt_test_meshes)
+                                       scene_info.tgt_train_meshes, scene_info.tgt_test_meshes,
+                                       fix_root_rotation=args.fix_root_rotation,
+                                       fix_root_translation=args.fix_root_translation,
+                                       fix_hand_pose=args.fix_hand_pose)
         
         # create gaussians
         if self.loaded_iter:

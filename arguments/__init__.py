@@ -59,11 +59,27 @@ class ModelParams(ParamGroup):
         self.disable_flame_static_offset = False
         self.not_finetune_model_params = False
         self.select_camera_id = -1
+        self.fix_root_rotation = False  # Fix root_pose to source's first timestep value
+        self.fix_root_translation = False  # Fix root_trans to source's first timestep value
+        self.fix_hand_pose = False  # Fix hand_pose to source's first timestep value (like shape parameter)
         super().__init__(parser, "Loading Parameters", sentinel)
 
     def extract(self, args):
         g = super().extract(args)
         g.source_path = os.path.abspath(g.source_path)
+        # Ensure fix_root_rotation, fix_root_translation, and fix_hand_pose are extracted
+        if hasattr(args, 'fix_root_rotation'):
+            g.fix_root_rotation = args.fix_root_rotation
+        else:
+            g.fix_root_rotation = False
+        if hasattr(args, 'fix_root_translation'):
+            g.fix_root_translation = args.fix_root_translation
+        else:
+            g.fix_root_translation = False
+        if hasattr(args, 'fix_hand_pose'):
+            g.fix_hand_pose = args.fix_hand_pose
+        else:
+            g.fix_hand_pose = False
         return g
 
 class PipelineParams(ParamGroup):
